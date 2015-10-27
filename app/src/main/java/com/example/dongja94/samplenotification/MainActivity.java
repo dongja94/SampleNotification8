@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.NotificationCompat;
@@ -44,8 +46,50 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        btn = (Button)findViewById(R.id.btn_download);
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startDwonload();
+            }
+        });
+
         mNM = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
     }
+
+
+    private void startDwonload() {
+        progress = 0;
+        mHandler.post(downloadRunnable);
+    }
+
+    Handler mHandler = new Handler(Looper.getMainLooper());
+    int progress = 0;
+    Runnable downloadRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (progress <= 100) {
+                NotificationCompat.Builder builder = new NotificationCompat.Builder(MainActivity.this);
+                builder.setSmallIcon(R.mipmap.ic_launcher);
+                builder.setTicker("download...");
+                builder.setContentTitle("file download");
+                builder.setContentText("download : " + progress);
+                builder.setProgress(100, progress, false);
+
+                builder.setDefaults(NotificationCompat.DEFAULT_ALL);
+
+                builder.setOngoing(true);
+                builder.setOnlyAlertOnce(true);
+                mNM.notify(100, builder.build());
+
+                progress += 10;
+                mHandler.postDelayed(this, 500);
+            } else {
+                mNM.cancel(100);
+            }
+
+        }
+    };
 
     int count = 0;
 
